@@ -1,0 +1,18 @@
+
+seqtk sample -s1219 oil_R1.fastq 5000000 > sub1.fastq
+seqtk sample -s1219 oil_R2.fastq 5000000 > sub2.fastq
+seqtk sample -s1219 oilMP_S4_L001_R1_001.fastq 1500000 > mate1.fastq
+seqtk sample -s1219 oilMP_S4_L001_R2_001.fastq 1500000 > mate2.fastq
+
+mkdir fastqc
+ls sub* mate* | xargs -tI{} fastqc -o fastqc {}
+mkdir multiqc
+multiqc -o multiqc fastqc
+platanus_trim sub*
+platanus_internal_trim mate*
+rm sub1.fastq sub2.fastq mate1.fastq mate2.fastq
+mkdir fastqc_trimmed
+ls sub* mate*| xargs -tI{} fastqc -o fastqc_trimmed {}
+platanus assemble -o Pxut -f sub1.fastq.trimmed sub2.fastq.trimmed 2> assemble.log
+platanus scaffold -o Pxut -c Pxut_contig.fa -IP1 sub1.fastq.trimmed sub2.fastq.trimmed -OP2 mate1.fastq.int_trimmed mate2.fastq.int_trimmed 2> scaffold.log
+platanus gap_close -o Pxut -c Pxut_scaffold.fa -IP1 sub1.fastq.trimmed sub2.fastq.trimmed -OP2 mate1.fastq.int_trimmed mate2.fastq.int_trimmed 2> gapclose.log
